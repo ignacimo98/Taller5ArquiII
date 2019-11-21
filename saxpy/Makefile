@@ -3,10 +3,10 @@ NVCC = nvcc
 all: saxpy
 
 %.o : %.cu
-	$(NVCC) -c $< -o $@
+	$(NVCC) -c $< -o $@ -O0
 
 saxpy : saxpy.o
-	$(NVCC) $^ -o $@
+	$(NVCC) $^ -o $@ -O0
 
 clean:
 	rm -rf *.o *.a saxpy
