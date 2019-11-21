@@ -27,13 +27,13 @@ void vecAdd_h(int *A1, int *B1, int *C1, int N) {
 
 int main(int argc, char **argv) {
   // Vector
-  int n = 1 << 25;
+  int n = 1000000000;
   // Block size and number
   int block_size, block_no;
   
 
   for (int j = 0; j < 8; ++j) {
-    block_size = 256;  // threads per block
+    block_size = 250;  // threads per block
     for (int k = 0; k < 4; ++k) {
       // Number of blocks
       int nBytes = n * sizeof(int);
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
       // Copying data back to host, this is a blocking call and will not start
       // until all kernels are finished
       cudaMemcpy(c, c_d, n * sizeof(int), cudaMemcpyDeviceToHost);
-      printf("n = %d \tblockSize = %d \tGPU time = %fs \tCPU time = %fs \tSpeedup =%f\n", n,
+      printf("n = %d \tblockSize = %d   \tGPU time = %fs \tCPU time = %fs \tSpeedup =%f\n", n,
              block_size, time_d, time_h, time_h/time_d);
 
       // Free GPU memory
