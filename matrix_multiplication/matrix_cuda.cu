@@ -2,54 +2,21 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define BLOCK_SIZE 250
+#define BLOCK_SIZE 16
 #define MATRIX_SIZE 4
  
 //GPU kernel 
-__global__ void gpu_matrix_mult(int *device_a, int *device_b, int *d_result, int n = 4) {
-  __shared__ int tile_a[BLOCK_SIZE][BLOCK_SIZE];
-  __shared__ int tile_b[BLOCK_SIZE][BLOCK_SIZE];
-
-  int row = blockIdx.y * BLOCK_SIZE + threadIdx.y;
-  int col = blockIdx.x * BLOCK_SIZE + threadIdx.x;
-  int tmp = 0;
-  int idx;
- 
-  for (int sub = 0; sub < gridDim.x; ++sub) 
+__global__ void gpu_matrix_mult(int *device_a, int *device_b, int *device_c, int n = 4) {
+  int row = blockIdx.y * blockDim.y + threadIdx.y; 
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+  int sum = 0;
+  if( col < n && row < n) 
   {
-    idx = row * n + sub * BLOCK_SIZE + threadIdx.x;
-    if(idx >= n*n)
+    for(int i = 0; i < n; i++) 
     {
-      // n may not divisible by BLOCK_SIZE
-      tile_a[threadIdx.y][threadIdx.x] = 0;
+      sum += device_a[row * n + i] * device_b[i * n + col];
     }
-    else
-    {
-      tile_a[threadIdx.y][threadIdx.x] = device_a[idx];
-    }
-
-    idx = (sub * BLOCK_SIZE + threadIdx.y) * n + col;
-    if(idx >= n*n)
-    {
-      tile_b[threadIdx.y][threadIdx.x] = 0;
-    }  
-    else
-    {
-      tile_b[threadIdx.y][threadIdx.x] = device_b[idx];
-    }
-
-    __syncthreads();
-
-    // matrix multiplication
-    for (int k = 0; k < BLOCK_SIZE; ++k) 
-    {
-      tmp += tile_a[threadIdx.y][k] * tile_b[k][threadIdx.x];
-    }
-    __syncthreads();
-  }
-  if(row < n && col < n)
-  {
-    d_result[row * n + col] = tmp;
+    device_c[row * n + col] = sum;
   }
 }
 
@@ -75,7 +42,7 @@ int main(int argc, char const *argv[])
   for (int i = 0; i < MATRIX_SIZE; ++i) {
     for (int j = 0; j < MATRIX_SIZE; ++j) {
       host_a[i * MATRIX_SIZE + j] = i + j;
-      printf("%i\t");
+      printf("%i\t", i + j);
     }
     printf("\n");
   }
@@ -84,16 +51,16 @@ int main(int argc, char const *argv[])
   for (int i = 0; i < MATRIX_SIZE; ++i) {
     for (int j = 0; j < MATRIX_SIZE; ++j) {
       host_b[i * MATRIX_SIZE + j] = i + j;
-      printf("%i\t");
+      printf("%i\t", i + j);
     }
     printf("\n");
   }
 
   printf("Allocating device memory...\n");
    //GPU memory allocation
-  cudaMalloc((void **) &device_a, sizeof(int)*m*MATRIX_SIZE);
-  cudaMalloc((void **) &device_b, sizeof(int)*MATRIX_SIZE*k);
-  cudaMalloc((void **) &device_c, sizeof(int)*m*k);
+  cudaMalloc((void **) &device_a, sizeof(int)*MATRIX_SIZE*MATRIX_SIZE);
+  cudaMalloc((void **) &device_b, sizeof(int)*MATRIX_SIZE*MATRIX_SIZE);
+  cudaMalloc((void **) &device_c, sizeof(int)*MATRIX_SIZE*MATRIX_SIZE);
 
   printf("Copying to device..\n");
   cudaMemcpy(device_a, host_a, sizeof(int)*MATRIX_SIZE*MATRIX_SIZE, cudaMemcpyHostToDevice);
@@ -106,13 +73,13 @@ int main(int argc, char const *argv[])
   cudaThreadSynchronize();
 
   // Transefr results from device to host 
-  cudaMemcpy(host_c, device_c, sizeof(int)*m*k, cudaMemcpyDeviceToHost);
+  cudaMemcpy(host_c, device_c, sizeof(int)*MATRIX_SIZE*MATRIX_SIZE, cudaMemcpyDeviceToHost);
 
   printf("Reading matrix C\n");
   for (int i = 0; i < MATRIX_SIZE; ++i) {
     for (int j = 0; j < MATRIX_SIZE; ++j) {
-      host_c[i * MATRIX_SIZE + j] = i + j;
-      printf("%i\t");
+      int aux = host_c[i * MATRIX_SIZE + j];
+      printf("%i\t", aux);
     }
     printf("\n");
   }
@@ -124,6 +91,5 @@ int main(int argc, char const *argv[])
   cudaFreeHost(host_a);
   cudaFreeHost(host_b);
   cudaFreeHost(host_c);
-  cudaFreeHost(h_cc);
   return 0;
 }
