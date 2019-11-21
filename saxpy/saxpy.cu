@@ -12,7 +12,7 @@ void saxpy_cpu(int n, float a, float *x, float *y) {
 int main(void) {
   int N = 1 << 28;
 
-  for (int j = 0; j < 8s; ++j) {
+  for (int j = 0; j < 8; ++j) {
     float *x, *y, *d_x, *d_y;
     x = (float *)malloc(N * sizeof(float));
     y = (float *)malloc(N * sizeof(float));
