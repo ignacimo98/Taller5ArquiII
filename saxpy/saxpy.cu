@@ -14,7 +14,7 @@ void saxpy_cpu(int n, float a, float *x, float *y){
 
 int main(void)
 {
-  int N = 1<<20;
+  int N = 1<<28;
   float *x, *y, *d_x, *d_y;
   x = (float*)malloc(N*sizeof(float));
   y = (float*)malloc(N*sizeof(float));
@@ -38,14 +38,10 @@ int main(void)
 
   cudaMemcpy(y, d_y, N*sizeof(float), cudaMemcpyDeviceToHost);
 
-  float maxError = 0.0f;
-  for (int i = 0; i < N; i++)
-    maxError = max(maxError, abs(y[i]-4.0f));
-  printf("Max error: %f\n", maxError);
-
   cudaFree(d_x);
   cudaFree(d_y);
 
+  int N = 1<<28;
 
   for (int i = 0; i < N; i++) {
     x[i] = 1.0f;
