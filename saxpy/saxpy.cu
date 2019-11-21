@@ -58,8 +58,8 @@ int main(void)
   //Time computing
   double time_d = (double)(end_d-start_d)/CLOCKS_PER_SEC;
   double time_h = (double)(end_h-start_h)/CLOCKS_PER_SEC;
-  printf("n = %d \t GPU time = %fs \t CPU time = %fs\n", n, time_d, time_h);
-  
+  printf("n = %d \t GPU time = %fs \t CPU time = %fs\n", N, time_d, time_h);
+
   free(x);
   free(y);
 }
