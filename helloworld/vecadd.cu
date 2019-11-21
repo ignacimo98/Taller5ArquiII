@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
   int block_size, block_no;
   
 
-  for (int j = 0; j < 2; ++j) {
+  for (int j = 0; j < 3; ++j) {
     block_size = 250;  // threads per block
     for (int k = 0; k < 2; ++k) {
       // Number of blocks
