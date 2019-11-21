@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
       cudaFree(a_d);
       cudaFree(b_d);
       cudaFree(c_d);
-      block_size >>1;
+      block_size>>=1;
     }
     n>>=1;
   }
